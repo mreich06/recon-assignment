@@ -4,12 +4,14 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Transaction } from "../src/models.js";
+import { compare, findingsFor } from "../src/findings.js";
 import { reconcileDay, type Rows } from "../src/reconcile.js";
 import {
   carriedRows,
   emptyState,
   loadState,
   matchedBefore,
+  openBefore,
   recordDay,
   saveState,
   type State,
@@ -35,7 +37,8 @@ const none: Rows = { provider: [], ledger: [] };
 /** One run of the tool for `date`, as the CLI does it. */
 function runDay(state: State, date: string, today: Rows) {
   const result = reconcileDay(today, carriedRows(state, date), matchedBefore(state, date));
-  return { result, state: recordDay(state, date, result) };
+  const changes = compare(openBefore(state, date), findingsFor(result));
+  return { result, changes, state: recordDay(state, date, result, changes.open) };
 }
 
 test("a row unmatched on day 1 is matched when its counterpart arrives on day 2", () => {
@@ -44,6 +47,8 @@ test("a row unmatched on day 1 is matched when its counterpart arrives on day 2"
   const day2 = runDay(day1.state, "2026-03-02", { provider: [], ledger: [tx("ledger", "a")] });
   assert.equal(day2.result.matched.length, 1);
   assert.equal(day2.result.providerOnly.length + day2.result.ledgerOnly.length, 0);
+  assert.equal(day2.changes.resolved.length, 1);
+  assert.equal(day2.changes.new.length, 0);
 });
 
 test("a row matched on day 1 and exported again on day 2 is not reported again", () => {

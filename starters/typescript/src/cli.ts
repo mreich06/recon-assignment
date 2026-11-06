@@ -1,27 +1,35 @@
 /** recon run --date YYYY-MM-DD */
-import { resolve } from "node:path";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadDay } from "./readers.js";
+import { compare, findingsFor } from "./findings.js";
 import { reconcileDay } from "./reconcile.js";
-import { carriedRows, loadState, matchedBefore, recordDay, saveState } from "./state.js";
+import { formatReport } from "./report.js";
+import {
+  carriedRows,
+  loadState,
+  matchedBefore,
+  openBefore,
+  recordDay,
+  saveState,
+} from "./state.js";
 
 const DEFAULT_STATE_FILE = resolve(fileURLToPath(import.meta.url), "../../state/recon-state.json");
+const REPORTS_DIR = resolve(fileURLToPath(import.meta.url), "../../reports");
 const DEFAULT_DATA_DIR = resolve(fileURLToPath(import.meta.url), "../../../../data");
 
 function run(date: string, dataDir: string, stateFile: string): number {
   const today = loadDay(dataDir, date);
-  console.log(
-    `${date}: ${today.provider.length} provider records, ${today.ledger.length} ledger rows`,
-  );
-
   const state = loadState(stateFile);
   const result = reconcileDay(today, carriedRows(state, date), matchedBefore(state, date));
-  saveState(stateFile, recordDay(state, date, result));
+  const changes = compare(openBefore(state, date), findingsFor(result));
+  saveState(stateFile, recordDay(state, date, result, changes.open));
 
-  console.log(
-    `matched ${result.matched.length}, provider only ${result.providerOnly.length}, ` +
-      `ledger only ${result.ledgerOnly.length}, needs review ${result.ambiguous.length}`,
-  );
+  const report = formatReport(date, changes);
+  console.log(report);
+  mkdirSync(REPORTS_DIR, { recursive: true });
+  writeFileSync(join(REPORTS_DIR, `${date}.txt`), report + "\n");
   return 0;
 }
 

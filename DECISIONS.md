@@ -79,3 +79,21 @@ In step 1 I noted that three 23:59 rows appeared in both days provider files so 
 The state only stored unmatched rows so the rows already matched were forgotten. I asked the agent to rewrite the code so the state file remembers which rows already matched. If one shows up again the tool skips it instead of reporting as new. Day 2 provider only dropped from 15 to 12
 
 Re-running a date is idempotent (same output, same state), and the tests pass
+
+In order to create the report we have to turn the day's result into findings. The findings should have a key that stays the same throughout different runs
+
+So I had the agent turn the day's result into findings, and write a function that builds the report.
+
+I wrote a prompt to report only what changed between runs- new findings, findings resolved since the last run, and a count of those still open. It includes amount mismatches as findings
+
+I asked it to output the result to a readable format with a summary line, findings grouped under plain headers, and amount difference shown. Saved as a txt file. It prints to terminal and is saved to reports/<date>.txt
+
+I chose txt since it opens cleanly in any editor 
+
+it forgot to add reports to .gitignore, so I added it
+
+Some open questions:
+Amount mismatches stay open on later runs since a matched pair is never seen again. So the "still open" count will keep growing. 
+I noticed that rows carry forward with no record of when they were first seen so nothing ever turns pending into missing after a day.
+
+Final check: tests, typecheck, and re-running each date gives an identical report and state file. I removed an unneeded test and an export that was not being used 

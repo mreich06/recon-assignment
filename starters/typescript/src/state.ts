@@ -1,6 +1,7 @@
 /** State between runs, per date: unmatched rows and keys of matched rows. */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import type { Finding } from "./findings.js";
 import type { Transaction } from "./models.js";
 import { rowKey, unmatchedRows, type DayResult, type Rows } from "./reconcile.js";
 
@@ -15,6 +16,8 @@ export interface State {
       ledger: StoredTransaction[];
       /** matched row keys, to skip re-exports */
       matched: string[];
+      /** findings still open after the run; missing in state files written before findings existed */
+      open?: Finding[];
     }
   >;
 }
@@ -43,15 +46,24 @@ export function saveState(path: string, state: State): void {
   renameSync(tmp, path);
 }
 
-/** Unmatched rows from the latest run before `date`. */
-export function carriedRows(state: State, date: string): Rows {
-  const previous = Object.keys(state.days)
+const latestBefore = (state: State, date: string) =>
+  Object.keys(state.days)
     .filter((d) => d < date)
     .sort()
     .at(-1);
+
+/** Unmatched rows from the latest run before `date`. */
+export function carriedRows(state: State, date: string): Rows {
+  const previous = latestBefore(state, date);
   if (!previous) return { provider: [], ledger: [] };
   const day = state.days[previous];
   return { provider: day.provider.map(fromStored), ledger: day.ledger.map(fromStored) };
+}
+
+/** Findings still open after the latest run before `date`. */
+export function openBefore(state: State, date: string): Finding[] {
+  const previous = latestBefore(state, date);
+  return previous ? (state.days[previous].open ?? []) : [];
 }
 
 /** Keys of rows matched before `date`. */
@@ -64,7 +76,7 @@ export function matchedBefore(state: State, date: string): Set<string> {
 }
 
 /** Replaces any earlier record for `date`, so re-runs don't duplicate. */
-export function recordDay(state: State, date: string, result: DayResult): State {
+export function recordDay(state: State, date: string, result: DayResult, open: Finding[]): State {
   const unmatched = unmatchedRows(result);
   return {
     days: {
@@ -73,6 +85,7 @@ export function recordDay(state: State, date: string, result: DayResult): State 
         provider: unmatched.provider.map(toStored),
         ledger: unmatched.ledger.map(toStored),
         matched: result.matched.flatMap((m) => [rowKey(m.provider), rowKey(m.ledger)]),
+        open,
       },
     },
   };
