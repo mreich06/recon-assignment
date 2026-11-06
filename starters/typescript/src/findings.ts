@@ -19,7 +19,7 @@ export interface Changes {
   open: Finding[];
 }
 
-const euros = (cents: number) => `€${(cents / 100).toFixed(2)}`;
+export const euros = (cents: number) => `€${(cents / 100).toFixed(2)}`;
 const when = (t: Transaction) => `${t.timestamp.toISOString().slice(0, 19).replace("T", " ")} UTC`;
 const describe = (t: Transaction) => `${euros(t.amountCents)} ${t.merchant}, ${when(t)} (${t.ref})`;
 

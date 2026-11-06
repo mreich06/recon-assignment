@@ -24,7 +24,7 @@ These are the findings in the data
 - Rows still unmatched after both days: on 03-01, 6 only in the provider file and 4 only in the ledger; on 03-02, 4 provider-only and 3 ledger-only.
 - The daily totals don't match: the ledger is €358.16 higher on 03-01 and €576.16 lower on 03-02.
 
-Questions
+To confirm before going live:
 - Was pt_9f6ceae92af2 a double charge or duplicate?
 - What's the ledger's daily cut off? UTC or local midnight?
 - Is the 35 cent different a fee or mismatch?
@@ -97,3 +97,18 @@ Amount mismatches stay open on later runs since a matched pair is never seen aga
 I noticed that rows carry forward with no record of when they were first seen so nothing ever turns pending into missing after a day.
 
 Final check: tests, typecheck, re-running the dates results in an identical report and state file. I removed an unneeded test and an export that was not being used 
+
+Since I have a few minutes left, I did FIN-121, I picked it because Step 1 had already shown the daily totals don't match, so it was small 
+
+Sanne's manager wants to know size of the gap so the report now has provider and ledger totals,the difference and whether they match. It uses the raw files as exported, and points to the findings for the cause.
+
+I verified with the data - both dates show the Step 1 gaps 
++€358.16 on 03-01
+-€576.16 on 03-02
+03-02 leaves state and report unchanged
+
+I updated the README with my instructions for running
+
+What I'd do with another day
+- Add a first-seen date so pending rows turn into missing after a day
+- Have finance mark findings as dealt with - FIN-124

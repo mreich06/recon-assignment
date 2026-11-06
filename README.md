@@ -1,3 +1,24 @@
+## Running my solution (TypeScript)
+
+Node 20+. From the repo root:
+
+```bash
+cd starters/typescript
+npm install
+npm start -- run --date 2026-03-01
+npm start -- run --date 2026-03-02
+```
+
+Run the dates in order. Each run prints the report and saves it to `starters/typescript/reports/<date>.txt`. State between runs is kept in `starters/typescript/state/recon-state.json`. Both folders are gitignored, so delete `state/` to start from scratch. Re-running a date is safe.
+
+Options: `--data-dir <path>` and `--state-file <path>`.
+
+Checks: `npm test`, `npm run typecheck`, `npm run format:check`.
+
+My decisions, open questions and how I used AI are in [DECISIONS.md](DECISIONS.md).
+
+---
+
 # Take-home: Daily transaction reconciliation
 
 **Time box: 3 hours.** We mean it — an unfinished tool with clear reasoning beats a complete one without.
