@@ -11,3 +11,6 @@ obj/
 .idea/
 .vscode/
 .DS_Store
+
+# local run state
+starters/typescript/state/

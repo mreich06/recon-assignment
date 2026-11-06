@@ -68,3 +68,14 @@ I questioned whether learning merchant names was needed. Ignoring merchants gave
 
 
 Tests - I decided to trim the "an unknown provider descriptor is not guessed" test since its testing same behavior as "no match when amount, merchant or timing differ" test
+
+I asked the agent to create PR summary
+
+Step 4: State and report
+I asked the agent to save each day's unmatched rows to the state file and carry them into the next day's run so the rows that arrive a day late can be matched
+
+In step 1 I noted that three 23:59 rows appeared in both days provider files so day 2 shouldn't report them as new. When reviewing the code. checked 03-01 and 03-02 and looked at day 2's provider-only rows. The 3 rows matched on day 1 were provider only in day 2 
+
+The state only stored unmatched rows so the rows already matched were forgotten. I asked the agent to rewrite the code so the state file remembers which rows already matched. If one shows up again the tool skips it instead of reporting as new. Day 2 provider only dropped from 15 to 12
+
+Re-running a date is idempotent (same output, same state), and the tests pass
