@@ -36,4 +36,20 @@ I thought about what decisions this would entail
 - Match by ID first, then by amount and merchant within 5 minutes
 - Don't automatch for pt_9f6ceae92af2 - report as possible double charge 
 - Track rows by ID across files so rows that appear in both days files aren't reported new on day 2. Missing rows should show as resolved if they show up in the next days report 
-- Since rows sometimes show up the next day, we can mark it as pending. Then if it's still unmatched for more than a day, mark as missing 
+- Since rows sometimes show up the next day, we can mark it as pending. Then if it's still unmatced for more than a day, mark as missing 
+
+Step 2: Core - Match transactions by ID
+I decided there will be 4 categories - matched, provider-only, ledger-only, ambiguous, noId
+
+I asked the agent to write a pure function that takes the provider and ledger transactions and sorts them into the 5 categories
+
+I saw a few problems:
+- duplicate Id is only flagged when the other side has the id too. So if a duplicate ID shows in provider but not at all in ledger, nothing marks that as a duplicate. Mark as ambiguous
+
+Gaps in tests
+- No test for a duplicate ID on the ledger side
+- No test for the duplicate ID issue found above
+- No empty input test
+- A test with a mixed collection of rows with and without IDs
+
+The tests also had some overlapping testing so I trimmed down to ensuring it tests core behavior and edge cases
