@@ -6,10 +6,13 @@
   "scripts": {
     "start": "tsx src/cli.ts",
     "test": "node --import tsx --test test/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "prettier": "3.9.10",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
