@@ -26,7 +26,7 @@ function run(date: string, dataDir: string, stateFile: string): number {
   const changes = compare(openBefore(state, date), findingsFor(result));
   saveState(stateFile, recordDay(state, date, result, changes.open));
 
-  const report = formatReport(date, changes);
+  const report = formatReport(date, changes, today);
   console.log(report);
   mkdirSync(REPORTS_DIR, { recursive: true });
   writeFileSync(join(REPORTS_DIR, `${date}.txt`), report + "\n");

@@ -1,5 +1,6 @@
 /** The printed report, for finance. */
-import type { Changes, Finding, FindingKind } from "./findings.js";
+import { euros, type Changes, type Finding, type FindingKind } from "./findings.js";
+import type { Rows } from "./reconcile.js";
 
 const HEADINGS: Record<FindingKind, string> = {
   "missing-in-ledger": "Paid at the provider, missing from the ledger",
@@ -20,10 +21,27 @@ function section(title: string, findings: Finding[]): string[] {
   return [...lines, ""];
 }
 
-export function formatReport(date: string, changes: Changes): string {
+const sum = (rows: Rows["provider"]) => rows.reduce((total, t) => total + t.amountCents, 0);
+
+/** FIN-121: totals of the day's two files as exported, before any carried-over rows. */
+export function totalsLine(today: Rows): string {
+  const provider = sum(today.provider);
+  const ledger = sum(today.ledger);
+  const diff = ledger - provider;
+  if (diff === 0)
+    return `Totals: provider ${euros(provider)}, ledger ${euros(ledger)}. They match.`;
+  const signed = diff < 0 ? `-${euros(-diff)}` : `+${euros(diff)}`;
+  return (
+    `Totals: provider ${euros(provider)}, ledger ${euros(ledger)}. ` +
+    `They do not match: ledger ${signed}. See the findings for the rows involved.`
+  );
+}
+
+export function formatReport(date: string, changes: Changes, today: Rows): string {
   const stillOpen = changes.open.length - changes.new.length;
   return [
     `Reconciliation for ${date}`,
+    totalsLine(today),
     `Summary: ${changes.new.length} new, ${changes.resolved.length} resolved, ` +
       `${stillOpen} still open from earlier runs (not listed again)`,
     "",
