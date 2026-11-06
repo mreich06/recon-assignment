@@ -96,4 +96,4 @@ Some open questions:
 Amount mismatches stay open on later runs since a matched pair is never seen again. So the "still open" count will keep growing. 
 I noticed that rows carry forward with no record of when they were first seen so nothing ever turns pending into missing after a day.
 
-Final check: tests, typecheck, and re-running each date gives an identical report and state file. I removed an unneeded test and an export that was not being used 
+Final check: tests, typecheck, re-running the dates results in an identical report and state file. I removed an unneeded test and an export that was not being used 
