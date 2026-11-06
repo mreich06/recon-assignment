@@ -53,3 +53,18 @@ Gaps in tests
 - A test with a mixed collection of rows with and without IDs
 
 The tests also had some overlapping testing so I trimmed down to ensuring it tests core behavior and edge cases
+
+Step 3: Core - Fallback matching
+I asked the agent to write the fallback match code and tests, using the decisions I made during the data exploration. 
+
+Rows without ID are matched by exact amount + merchant and a ledger booking 0–5 minutes after capture
+A pair is matched only when each row is the other's only candidate
+When rows match for the same candidates, they report together as ambiguous
+Rows with no candidates are reported unmatched
+
+It looks correct, and I see the €249.00 Amazon row is flagged as ambiguous with the two ledger rows that might be matching. The €21.00 Albert Heijn and €150.34 Ziggo have no ledger row. All the other no ID rows match 
+
+I questioned whether learning merchant names was needed. Ignoring merchants gave the same results. I kept the check because a wrong automatic match hides a discrepancy and unknown merchant would create something someone has to review
+
+
+Tests - I decided to trim the "an unknown provider descriptor is not guessed" test since its testing same behavior as "no match when amount, merchant or timing differ" test
